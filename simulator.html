@@ -118,6 +118,28 @@
   .branch{ margin-top:28px; }
   .branch .field-label{ text-align:center; margin-bottom:14px; }
 
+  .branch-hook{
+    background: linear-gradient(135deg, #eafbf3, #fdf6ec);
+    border: 1.5px solid var(--growth);
+    border-radius: var(--radius);
+    padding: 18px 18px 14px;
+    margin-bottom: 22px;
+  }
+  .hook-badge{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11.5px; font-weight:700; color:var(--growth-deep);
+    background:#ffffff; border:1px solid var(--growth); padding:4px 12px; border-radius:999px;
+    margin-bottom:10px;
+  }
+  .hook-text{ font-size:13.5px; color:var(--ink); line-height:1.75; }
+  .hook-text strong{ color:var(--growth-deep); font-size:16px; }
+  .hook-source{ font-size:10.5px; color:var(--muted); margin-top:9px; }
+
+  .it-opt{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:16px 10px; }
+  .it-opt-main{ font-size:15px; font-weight:800; }
+  .it-opt-sub{ font-size:11px; font-weight:500; color:var(--muted); }
+  .opt.checked .it-opt-sub{ color:var(--primary-light); }
+
   .cta-grid{ display:flex; flex-direction:column; gap:14px; margin-top:16px; }
   .cta-card{
     display:block; text-decoration:none; border-radius:var(--radius);
@@ -244,10 +266,23 @@
     <button type="button" class="share-btn" id="shareBtn">結果をシェアする</button>
 
     <div class="branch">
+      <div class="branch-hook">
+        <span class="hook-badge">気になるデータ</span>
+        <p class="hook-text">経済産業省の試算では、2030年に最大<strong>79万人</strong>のIT人材が不足すると言われています。人手不足が続く分野だからこそ未経験からでも挑戦しやすく、「正社員」の平均以上に収入が伸びる可能性もあります。</p>
+        <p class="hook-source">出典:経済産業省「IT人材需給に関する調査」(2019年4月)</p>
+      </div>
       <label class="field-label">IT・Web系のスキルを身につけて働くことに興味はありますか？</label>
       <div class="opt-group" id="itGroup">
-        <label class="opt"><input type="radio" name="it" value="yes">興味ある</label>
-        <label class="opt"><input type="radio" name="it" value="no">まだわからない</label>
+        <label class="opt it-opt">
+          <input type="radio" name="it" value="yes">
+          <span class="it-opt-main">興味ある</span>
+          <span class="it-opt-sub">未経験OKの求人・エージェントを見る</span>
+        </label>
+        <label class="opt it-opt">
+          <input type="radio" name="it" value="no">
+          <span class="it-opt-main">まだわからない</span>
+          <span class="it-opt-sub">まずは無理なく相談してみる</span>
+        </label>
       </div>
 
       <div class="cta-grid" id="ctaGrid">
