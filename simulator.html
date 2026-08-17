@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生涯年収シミュレーター | このまま働き続けたら、いくら変わる？</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1f2430;
+    --bg:#fbf7f2;
+    --bg-card:#ffffff;
+    --primary:#1d3557;
+    --primary-light:#3a5a85;
+    --accent:#f4a261;
+    --accent-deep:#d97b34;
+    --growth:#1baf7a;
+    --growth-deep:#128a5c;
+    --stay:#a8a296;
+    --line:#e6ded2;
+    --muted:#63697a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Noto Sans JP', sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.75;
+  }
+  h1,h2,h3{font-family:'Zen Kaku Gothic New', sans-serif;}
+  .wrap{max-width:640px; margin:0 auto; padding:0 20px 80px;}
+
+  header{ border-bottom:1px solid var(--line); padding:16px 20px; margin-bottom:8px; }
+  .header-inner{max-width:640px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;}
+  .logo{font-weight:900; font-size:16px; color:var(--primary); text-decoration:none; letter-spacing:.02em;}
+
+  .hero{ padding:36px 0 28px; text-align:center; }
+  .eyebrow{
+    display:inline-block; font-size:12.5px; font-weight:700; color:var(--accent-deep);
+    background:#fdece0; padding:5px 14px; border-radius:999px; margin-bottom:14px;
+  }
+  h1{ font-size:24px; font-weight:900; line-height:1.5; margin-bottom:12px; }
+  .hero p{ font-size:14.5px; color:var(--muted); max-width:480px; margin:0 auto; }
+
+  .card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 22px; margin-bottom:20px;
+  }
+
+  .field{ margin-bottom:22px; }
+  .field:last-child{ margin-bottom:0; }
+  .field-label{ font-size:14px; font-weight:700; margin-bottom:10px; display:block; }
+  .field-hint{ font-size:12px; color:var(--muted); margin-top:4px; }
+
+  input[type="number"]{
+    width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:10px;
+    font-size:16px; font-family:inherit; color:var(--ink); background:#fff;
+  }
+  input[type="number"]:focus{ outline:none; border-color:var(--primary-light); }
+
+  .opt-group{ display:flex; flex-wrap:wrap; gap:8px; }
+  .opt{
+    flex:1 1 auto; min-width:96px; text-align:center;
+    border:1.5px solid var(--line); border-radius:10px; padding:12px 10px;
+    font-size:13.5px; font-weight:700; color:var(--ink); cursor:pointer;
+    background:#fff; transition:all .15s ease; position:relative;
+  }
+  .opt input{ position:absolute; opacity:0; inset:0; cursor:pointer; margin:0; }
+  .opt.checked{ border-color:var(--primary); background:#eef2f7; color:var(--primary); }
+
+  .form-error{
+    display:none;
+    background:#fdeceb; border:1.5px solid #e37b74; color:#a3352c;
+    border-radius:10px; padding:13px 16px; font-size:13px; font-weight:700;
+    line-height:1.7; margin-top:20px;
+  }
+  .input-error{ border-color:#d03b3b !important; background:#fff5f4 !important; }
+
+  .submit-btn{
+    display:block; width:100%; margin-top:26px;
+    background:var(--primary); color:#fff; font-weight:700; font-size:16px;
+    border:none; border-radius:10px; padding:16px; cursor:pointer;
+    font-family:inherit;
+  }
+  .submit-btn:hover{ background:var(--primary-light); }
+
+  /* ---- results ---- */
+  #resultCard{ display:none; }
+  .result-headline{ text-align:center; margin-bottom:22px; }
+  .result-headline .label{ font-size:13px; color:var(--muted); font-weight:700; margin-bottom:6px; }
+  .result-headline .diff{ font-size:32px; font-weight:900; color:var(--accent-deep); line-height:1.3; }
+  .result-headline .sub{ font-size:12.5px; color:var(--muted); margin-top:6px; }
+
+  .bars{ display:flex; flex-direction:column; gap:16px; margin-bottom:8px; }
+  .bar-row .bar-top{ display:flex; justify-content:space-between; align-items:baseline; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .bar-row .bar-top .val{ font-size:15px; }
+  .bar-track{ height:26px; background:#f1efe9; border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:6px; transition:width .6s ease; }
+  .bar-fill.growth{ background:var(--growth); }
+  .bar-fill.stay{ background:var(--stay); }
+
+  .disclaimer{
+    font-size:11.5px; color:var(--muted); background:#f5f2ec; border-radius:8px;
+    padding:12px 14px; margin-top:18px;
+  }
+
+  .share-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    width:100%; margin-top:16px; background:#fff; color:var(--primary);
+    border:1.5px solid var(--primary); border-radius:10px; padding:12px; font-size:14px;
+    font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .share-btn:hover{ background:#eef2f7; }
+
+  .branch{ margin-top:28px; }
+  .branch .field-label{ text-align:center; margin-bottom:14px; }
+
+  .cta-grid{ display:flex; flex-direction:column; gap:14px; margin-top:16px; }
+  .cta-card{
+    display:block; text-decoration:none; border-radius:var(--radius);
+    padding:20px; border:1.5px solid var(--line); background:#fff;
+    transition:all .2s ease; opacity:.55; transform:scale(.99);
+  }
+  .cta-card.highlight{
+    opacity:1; transform:scale(1); border-color:var(--growth);
+    box-shadow:0 4px 18px rgba(27,175,122,.18);
+  }
+  .cta-card .tag{ font-size:11px; font-weight:700; color:var(--growth-deep); margin-bottom:6px; display:block; }
+  .cta-card h3{ font-size:16px; color:var(--ink); margin-bottom:6px; }
+  .cta-card p{ font-size:12.5px; color:var(--muted); }
+  .cta-card .go{ font-size:13px; font-weight:700; color:var(--primary); margin-top:10px; display:inline-block; }
+
+  footer.note{
+    margin-top:36px; font-size:11.5px; color:var(--muted);
+    border-top:1px solid var(--line); padding-top:16px; text-align:center;
+  }
+  footer.note a{ color:var(--primary); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="logo">生涯年収シミュレーター</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <span class="eyebrow">30秒でわかる・完全無料・登録不要</span>
+    <h1>「このままの働き方」を60歳まで続けたら、<br>いくら変わる？</h1>
+    <p>年齢・学歴・今の雇用形態を入力するだけで、公的統計の年齢別賃金カーブをもとに「今のまま」と「正社員として働いた場合」の収入差を試算します。</p>
+  </div>
+
+  <div class="card" id="formCard">
+    <form id="simForm" novalidate>
+      <div class="field">
+        <label class="field-label">今の年齢</label>
+        <input type="number" id="age" inputmode="numeric" placeholder="例: 24">
+        <div class="field-hint">15〜59歳の範囲で入力してください</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">性別</label>
+        <div class="opt-group" id="genderGroup">
+          <label class="opt"><input type="radio" name="gender" value="male">男性</label>
+          <label class="opt"><input type="radio" name="gender" value="female">女性</label>
+          <label class="opt"><input type="radio" name="gender" value="other" checked>回答しない</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">最終学歴</label>
+        <div class="opt-group" id="eduGroup">
+          <label class="opt"><input type="radio" name="edu" value="high" checked>高校卒(中卒・高卒認定含む)</label>
+          <label class="opt"><input type="radio" name="edu" value="univ">大学・大学院卒</label>
+        </div>
+        <div class="field-hint">専門学校・短大卒の方はどちらか近い方を選んでください</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">今の雇用形態</label>
+        <div class="opt-group" id="empGroup">
+          <label class="opt"><input type="radio" name="emp" value="seishain">正社員</label>
+          <label class="opt"><input type="radio" name="emp" value="freeter" checked>フリーター・アルバイト</label>
+          <label class="opt"><input type="radio" name="emp" value="contract">契約・派遣社員</label>
+          <label class="opt"><input type="radio" name="emp" value="parttime">パート</label>
+          <label class="opt"><input type="radio" name="emp" value="none">無職</label>
+          <label class="opt"><input type="radio" name="emp" value="other">その他</label>
+        </div>
+      </div>
+
+      <div class="field" id="incomeSection">
+        <label class="field-label">今の収入(わかる範囲でOK・未入力なら統計の平均値で試算します)</label>
+        <div class="opt-group" id="payUnitGroup">
+          <label class="opt"><input type="radio" name="payUnit" value="hourly">時給</label>
+          <label class="opt"><input type="radio" name="payUnit" value="monthly" checked>月給</label>
+          <label class="opt"><input type="radio" name="payUnit" value="annual">年収</label>
+        </div>
+
+        <div style="margin-top:14px;">
+          <input type="number" id="payAmount" inputmode="numeric" placeholder="例: 180000">
+          <div class="field-hint" id="payAmountHint">月給(円・総支給目安)を入力してください</div>
+        </div>
+
+        <div id="hourlyHoursWrap" style="margin-top:14px; display:none;">
+          <input type="number" id="monthlyHours" inputmode="numeric" placeholder="例: 120">
+          <div class="field-hint">1ヶ月に働いている時間の目安(時間)</div>
+        </div>
+      </div>
+
+      <div class="form-error" id="formError"></div>
+
+      <button type="submit" class="submit-btn">試算する</button>
+    </form>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-headline">
+      <div class="label">60歳まで働くとしたら</div>
+      <div class="diff" id="diffText">-</div>
+      <div class="sub" id="subText">-</div>
+    </div>
+
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-top"><span>正社員に変わった場合</span><span class="val" id="regVal">-</span></div>
+        <div class="bar-track"><div class="bar-fill growth" id="regBar" style="width:0%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-top"><span id="nonLabel">今のまま働き続けた場合</span><span class="val" id="nonVal">-</span></div>
+        <div class="bar-track"><div class="bar-fill stay" id="nonBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      厚生労働省「令和6年賃金構造基本統計調査」(雇用形態・性・年齢階級別賃金)の年齢別賃金カーブをもとに試算しています。年収は月額給与に平均的な賞与月数(正社員:年4ヶ月分/非正規:年0.5ヶ月分相当)を加えた概算値、学歴による補正は労働政策研究・研修機構の統計を参考にした概算倍率です。収入を入力いただいた方は、その金額を起点にカーブの形だけを当てはめて試算しています。地域・業種・能力・企業規模・将来の昇給等により実際の金額は変動します。個人の将来を保証するものではありません。
+    </div>
+
+    <button type="button" class="share-btn" id="shareBtn">結果をシェアする</button>
+
+    <div class="branch">
+      <label class="field-label">IT・Web系のスキルを身につけて働くことに興味はありますか？</label>
+      <div class="opt-group" id="itGroup">
+        <label class="opt"><input type="radio" name="it" value="yes">興味ある</label>
+        <label class="opt"><input type="radio" name="it" value="no">まだわからない</label>
+      </div>
+
+      <div class="cta-grid" id="ctaGrid">
+        <a class="cta-card" id="ctaStageZero" href="https://boostyourluck.github.io/stage-zero-lp/lp.html" target="_blank" rel="noopener">
+          <span class="tag">IT未経験からの転職向け</span>
+          <h3>ステージゼロ</h3>
+          <p>IT実務未経験から挑戦できる求人・エージェントを無料でご紹介。</p>
+          <span class="go">診断結果をもとに相談してみる →</span>
+        </a>
+        <a class="cta-card" id="ctaHajimeru" href="https://boostyourluck.github.io/hajimeru-lp/lp.html" target="_blank" rel="noopener">
+          <span class="tag">フリーター・無職の方向け</span>
+          <h3>ハジメル</h3>
+          <p>学歴・職歴に自信がなくても大丈夫。あなたに合った就職エージェントを無料でご紹介。</p>
+          <span class="go">診断結果をもとに相談してみる →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="note">
+    このツールは統計データに基づく参考シミュレーションであり、個別の転職・キャリア相談ではありません。<br>
+    運営：ステージゼロ / ハジメル運営事務局
+  </footer>
+</div>
+
+<script>
+(function(){
+  // 厚生労働省「令和6年賃金構造基本統計調査」第6-1表(雇用形態、性、年齢階級別賃金)より、
+  // 所定内給与額(月額・万円)を年齢階級ごとに再現した賃金カーブ。区分は ~19,20-24,25-29,30-34,35-39,40-44,45-49,50-54,55-59,60-64。
+  var AGE_BRACKETS = [19,24,29,34,39,44,49,54,59,64];
+  var WAGE_CURVE = {
+    male:   { reg:[20.52,23.82,27.87,32.29,35.95,39.34,42.40,43.90,45.91,38.22], non:[18.42,19.90,22.72,23.28,23.97,24.53,26.44,25.07,26.49,29.87] },
+    female: { reg:[19.41,23.57,26.51,28.22,29.96,30.80,32.08,32.41,32.72,29.92], non:[17.48,19.58,21.44,21.34,20.96,21.14,21.29,21.26,20.90,21.70] },
+    other:  { reg:[19.97,23.70,27.19,30.26,32.96,35.07,37.24,38.16,39.32,34.07], non:[17.95,19.74,22.08,22.31,22.47,22.84,23.87,23.17,23.70,25.79] }
+  };
+  // 学歴による補正倍率(JILPT「ユースフル労働統計」の生涯賃金・学歴別比率をもとにした概算)
+  var EDU_MULT = { high:1.00, univ:1.18 };
+  // 月額給与から年収を概算する際の年間換算倍率(賞与を含む。正社員は年4ヶ月分相当、非正規は年0.5ヶ月分相当のボーナスを加味した概算値)
+  var ANNUAL_FACTOR = { reg:16.0, non:12.5 };
+
+  function wageForAge(age, arr){
+    for(var i=0;i<AGE_BRACKETS.length;i++){ if(age <= AGE_BRACKETS[i]) return arr[i]; }
+    return arr[arr.length-1];
+  }
+  function sumFutureIncome(fromAge, curveArr, edu, annualFactor){
+    var total = 0;
+    for(var a=fromAge; a<60; a++){
+      total += wageForAge(a, curveArr) * EDU_MULT[edu] * annualFactor;
+    }
+    return total; // 万円
+  }
+
+  function fmtMan(man){
+    man = Math.round(man);
+    if(man >= 10000){
+      var oku = Math.floor(man / 10000);
+      var rest = man % 10000;
+      return rest > 0 ? (oku + '億' + rest.toLocaleString() + '万円') : (oku + '億円');
+    }
+    return man.toLocaleString() + '万円';
+  }
+
+  function setChecked(groupId){
+    var group = document.getElementById(groupId);
+    if(!group) return;
+    var inputs = group.querySelectorAll('input');
+    inputs.forEach(function(inp){
+      inp.addEventListener('change', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('checked'); });
+        inp.closest('.opt').classList.add('checked');
+      });
+      if(inp.checked){ inp.closest('.opt').classList.add('checked'); }
+    });
+  }
+  setChecked('genderGroup');
+  setChecked('eduGroup');
+  setChecked('itGroup');
+  setChecked('empGroup');
+  setChecked('payUnitGroup');
+
+  document.getElementById('empGroup').addEventListener('change', function(e){
+    var isNone = e.target.value === 'none';
+    document.getElementById('incomeSection').style.display = isNone ? 'none' : 'block';
+  });
+
+  document.getElementById('payUnitGroup').addEventListener('change', function(e){
+    var val = e.target.value;
+    var hint = document.getElementById('payAmountHint');
+    var hoursWrap = document.getElementById('hourlyHoursWrap');
+    var amountInput = document.getElementById('payAmount');
+    if(val === 'hourly'){
+      hint.textContent = '時給(円)を入力してください';
+      amountInput.placeholder = '例: 1100';
+      hoursWrap.style.display = 'block';
+    } else if(val === 'monthly'){
+      hint.textContent = '月給(円・総支給目安)を入力してください';
+      amountInput.placeholder = '例: 180000';
+      hoursWrap.style.display = 'none';
+    } else {
+      hint.textContent = '年収(万円)を入力してください';
+      amountInput.placeholder = '例: 250';
+      hoursWrap.style.display = 'none';
+    }
+  });
+
+  var lastDiffText = '', lastSubText = '';
+
+  function showFormErrors(messages){
+    var box = document.getElementById('formError');
+    box.innerHTML = messages.map(function(m){ return '・' + m; }).join('<br>');
+    box.style.display = 'block';
+    box.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  function clearFormErrors(){
+    document.getElementById('formError').style.display = 'none';
+    document.getElementById('formError').innerHTML = '';
+  }
+  function setFieldError(el, hasError){
+    if(!el) return;
+    el.classList.toggle('input-error', !!hasError);
+  }
+
+  ['age','payAmount','monthlyHours'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(){
+      this.classList.remove('input-error');
+    });
+  });
+
+  document.getElementById('simForm').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    var ageEl = document.getElementById('age');
+    var ageRaw = ageEl.value.trim();
+    var age = parseInt(ageRaw, 10);
+
+    var emp = document.querySelector('input[name="emp"]:checked').value;
+    var payUnitChecked = document.querySelector('input[name="payUnit"]:checked');
+    var payUnit = payUnitChecked ? payUnitChecked.value : null;
+    var payAmountEl = document.getElementById('payAmount');
+    var monthlyHoursEl = document.getElementById('monthlyHours');
+    var payAmountRaw = payAmountEl.value.trim();
+    var monthlyHoursRaw = monthlyHoursEl.value.trim();
+    var payAmount = parseFloat(payAmountRaw);
+    var monthlyHours = parseFloat(monthlyHoursRaw);
+
+    // ---- 入力チェック ----
+    var errors = [];
+    var ageInvalid = (ageRaw === '' || isNaN(age) || age < 15 || age > 59);
+    if(ageInvalid){ errors.push('「今の年齢」を15〜59の範囲で入力してください。'); }
+    setFieldError(ageEl, ageInvalid);
+
+    var amountInvalid = false, hoursInvalid = false;
+    if(emp !== 'none'){
+      if(payAmountRaw !== '' && (isNaN(payAmount) || payAmount <= 0)){
+        errors.push('「今の収入」の金額は0より大きい数値で入力してください。');
+        amountInvalid = true;
+      }
+      if(payUnit === 'hourly' && payAmountRaw !== '' && monthlyHoursRaw === ''){
+        errors.push('時給を入力した場合は「1ヶ月に働いている時間の目安」も入力してください。');
+        hoursInvalid = true;
+      }
+      if(payUnit === 'hourly' && monthlyHoursRaw !== '' && (isNaN(monthlyHours) || monthlyHours <= 0)){
+        errors.push('「1ヶ月に働いている時間の目安」は0より大きい数値で入力してください。');
+        hoursInvalid = true;
+      }
+      if(payUnit !== 'hourly' && monthlyHoursRaw !== '' && payAmountRaw === ''){
+        errors.push('労働時間だけでなく、金額も入力してください。');
+        amountInvalid = true;
+      }
+    }
+    setFieldError(payAmountEl, amountInvalid);
+    setFieldError(monthlyHoursEl, hoursInvalid);
+
+    if(errors.length){
+      showFormErrors(errors);
+      if(ageInvalid){ ageEl.focus(); }
+      return;
+    }
+    clearFormErrors();
+
+    var gender = document.querySelector('input[name="gender"]:checked').value;
+    var edu = document.querySelector('input[name="edu"]:checked').value;
+    var remain = Math.max(60 - age, 1);
+    var curves = WAGE_CURVE[gender];
+
+    // 入力された実際の収入があれば、その人の今の雇用形態に対応する賃金カーブの「形」を、
+    // 入力額に合わせて拡大・縮小してから将来分を積み上げる。未入力なら統計そのままの平均カーブを使う。
+    var personalAnnualMan = null;
+    if(emp !== 'none' && payUnit && !isNaN(payAmount) && payAmount > 0){
+      if(payUnit === 'hourly' && !isNaN(monthlyHours) && monthlyHours > 0){
+        personalAnnualMan = (payAmount * monthlyHours * 12) / 10000;
+      } else if(payUnit === 'monthly'){
+        personalAnnualMan = (payAmount * 12) / 10000;
+      } else if(payUnit === 'annual'){
+        personalAnnualMan = payAmount; // 万円で入力
+      }
+    }
+    var usingPersonal = personalAnnualMan !== null && personalAnnualMan > 0;
+
+    // 「正社員として働いた場合」は常に正社員カーブが基準。ただし本人がすでに正社員で実収入がわかる場合は、
+    // その人自身の水準に合わせてカーブを拡大・縮小する。
+    var regTotal = sumFutureIncome(age, curves.reg, edu, ANNUAL_FACTOR.reg);
+    if(usingPersonal && emp === 'seishain'){
+      var regNow = wageForAge(age, curves.reg) * EDU_MULT[edu] * ANNUAL_FACTOR.reg;
+      var regRatio = personalAnnualMan / regNow;
+      regTotal = regTotal * regRatio;
+    }
+
+    // 「今のまま」は、正社員ならそのまま正社員カーブ、非正規系ならすべて非正規カーブを基準に、
+    // 実収入があればその水準に合わせてカーブを拡大・縮小する。
+    var shapeArr = (emp === 'seishain') ? curves.reg : curves.non;
+    var shapeFactor = (emp === 'seishain') ? ANNUAL_FACTOR.reg : ANNUAL_FACTOR.non;
+    var nonTotal = sumFutureIncome(age, shapeArr, edu, shapeFactor);
+    if(usingPersonal){
+      var nowOfficial = wageForAge(age, shapeArr) * EDU_MULT[edu] * shapeFactor;
+      var ratio = personalAnnualMan / nowOfficial;
+      nonTotal = nonTotal * ratio;
+    }
+
+    var diff = regTotal - nonTotal;
+    var maxTotal = Math.max(regTotal, nonTotal);
+
+    document.getElementById('nonLabel').textContent = usingPersonal
+      ? '今のまま働き続けた場合(あなたの入力ベース)'
+      : '今のまま働き続けた場合(統計の平均値)';
+
+    if(diff > 0){
+      document.getElementById('diffText').textContent = '最大 ' + fmtMan(diff) + ' の差';
+      lastDiffText = fmtMan(diff);
+    } else {
+      document.getElementById('diffText').textContent = 'すでに正社員平均並みの水準です';
+      lastDiffText = '正社員平均並みの水準';
+    }
+    document.getElementById('subText').textContent = '残り' + remain + '年間(60歳まで)の試算';
+    lastSubText = '残り' + remain + '年間';
+
+    document.getElementById('regVal').textContent = fmtMan(regTotal);
+    document.getElementById('nonVal').textContent = fmtMan(nonTotal);
+
+    requestAnimationFrame(function(){
+      document.getElementById('regBar').style.width = (regTotal / maxTotal * 100) + '%';
+      document.getElementById('nonBar').style.width = (nonTotal / maxTotal * 100) + '%';
+    });
+
+    document.getElementById('formCard').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  document.getElementById('shareBtn').addEventListener('click', function(){
+    var text = 'このまま今の働き方を60歳まで続けた場合と正社員に変わった場合で、' + lastDiffText + 'の差が出るかもという結果が出ました…！\n無料で30秒診断→';
+    var url = location.href;
+    if(navigator.share){
+      navigator.share({ text: text, url: url }).catch(function(){});
+    } else {
+      navigator.clipboard.writeText(text + ' ' + url).then(function(){
+        var btn = document.getElementById('shareBtn');
+        var orig = btn.textContent;
+        btn.textContent = 'コピーしました！';
+        setTimeout(function(){ btn.textContent = orig; }, 1800);
+      });
+    }
+  });
+
+  document.getElementById('itGroup').addEventListener('change', function(e){
+    var val = e.target.value;
+    var sz = document.getElementById('ctaStageZero');
+    var hj = document.getElementById('ctaHajimeru');
+    sz.classList.toggle('highlight', val === 'yes');
+    hj.classList.toggle('highlight', val !== 'yes');
+  });
+})();
+</script>
+
+</body>
+</html>
